@@ -15,9 +15,12 @@ TWILIO_SID = os.getenv("TWILIO_SID")
 TWILIO_AUTH = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_NUMBERS = os.getenv("TWILIO_NUMBERS", "")  # comma-separated
 PUBLIC_URL = os.getenv("PUBLIC_URL")  # e.g. https://<your-ngrok>.ngrok.io
+MEDIA_WS_URL = os.getenv("MEDIA_WS_URL")  # e.g. wss://<your-media-host>.ngrok.io/media
 
 if not PUBLIC_URL:
     print("WARNING: PUBLIC_URL not set. Twilio must reach your /handle-call and /media endpoints.")
+if not MEDIA_WS_URL:
+    print("WARNING: MEDIA_WS_URL not set. Twilio media streaming will not work until this is configured.")
 
 client = Client(TWILIO_SID, TWILIO_AUTH) if TWILIO_SID and TWILIO_AUTH else None
 
@@ -104,9 +107,10 @@ def start_call():
 # Endpoint Twilio hits to get TwiML — this TwiML starts a Media Stream to our WS endpoint
 @app.route("/handle-call", methods=["POST","GET"])
 def handle_call():
-    # This TwiML tells Twilio to connect a Media Stream to our WS server at PUBLIC_URL/media
+    # Twilio Media Streams require a public wss:// URL. Keep it separately configurable
+    # from the Flask app's public HTTP URL so the websocket server can run on another port/host.
     # Also we play a short message to inform user of recording
-    media_ws_url = (PUBLIC_URL.rstrip("/") + "/media") if PUBLIC_URL else "wss://your-public-host/media"
+    media_ws_url = MEDIA_WS_URL or "wss://your-public-host/media"
 
     twiml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <Response>

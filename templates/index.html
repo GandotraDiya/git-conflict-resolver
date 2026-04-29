@@ -3,34 +3,554 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Call AI Agent — Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Call AI Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; margin: 32px; }
-    input[type="tel"] { width: 300px; padding: 6px; }
-    button { padding: 8px 14px; }
-    .status { margin-top: 12px; color: #333; }
-    .transcripts { margin-top: 20px; }
-    pre { background:#f5f5f5; padding:10px; border-radius:6px; }
+    :root {
+      --bg: #f4efe6;
+      --paper: rgba(255, 252, 247, 0.82);
+      --paper-strong: rgba(255, 250, 243, 0.95);
+      --ink: #1f2a21;
+      --muted: #5d695f;
+      --line: rgba(32, 47, 37, 0.12);
+      --accent: #d86138;
+      --accent-deep: #b94d28;
+      --accent-soft: #ffe0d1;
+      --moss: #294936;
+      --shadow: 0 24px 80px rgba(63, 43, 18, 0.14);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: "Manrope", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(232, 123, 75, 0.22), transparent 26%),
+        radial-gradient(circle at 85% 20%, rgba(64, 113, 83, 0.18), transparent 24%),
+        linear-gradient(135deg, #f4efe6 0%, #efe4d1 48%, #f6f2ec 100%);
+      padding: 28px;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: auto;
+      border-radius: 999px;
+      pointer-events: none;
+      filter: blur(12px);
+      z-index: 0;
+    }
+
+    body::before {
+      width: 220px;
+      height: 220px;
+      left: -40px;
+      bottom: 10%;
+      background: rgba(216, 97, 56, 0.12);
+    }
+
+    body::after {
+      width: 280px;
+      height: 280px;
+      right: -60px;
+      top: 12%;
+      background: rgba(41, 73, 54, 0.12);
+    }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .hero,
+    .panel {
+      background: var(--paper);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .hero {
+      min-height: 740px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      padding: 34px;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.26), transparent 35%),
+        radial-gradient(circle at 75% 22%, rgba(216, 97, 56, 0.22), transparent 20%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(32, 47, 37, 0.08);
+      color: var(--moss);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #ff9a6a, var(--accent));
+      box-shadow: 0 0 0 6px rgba(216, 97, 56, 0.12);
+    }
+
+    h1 {
+      margin: 22px 0 16px;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: clamp(2.6rem, 6vw, 5rem);
+      line-height: 0.98;
+      letter-spacing: -0.04em;
+      max-width: 8ch;
+    }
+
+    .lead {
+      max-width: 56ch;
+      margin: 0 0 28px;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 28px;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.68);
+      border: 1px solid rgba(32, 47, 37, 0.08);
+      transform: translateY(14px);
+      opacity: 0;
+      animation: rise 0.8s ease forwards;
+    }
+
+    .stat:nth-child(2) {
+      animation-delay: 0.12s;
+    }
+
+    .stat:nth-child(3) {
+      animation-delay: 0.24s;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .hero-footer {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-top: 30px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+
+    .hero-note {
+      max-width: 42ch;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .hero-note strong {
+      color: var(--ink);
+    }
+
+    .orb {
+      width: 118px;
+      aspect-ratio: 1;
+      border-radius: 32px;
+      background:
+        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.88), transparent 28%),
+        linear-gradient(150deg, #ffab84, #d86138 55%, #7f3215);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.45),
+        0 22px 50px rgba(152, 63, 29, 0.26);
+      transform: rotate(12deg);
+    }
+
+    .panel {
+      padding: 28px;
+      display: grid;
+      gap: 18px;
+      align-self: stretch;
+    }
+
+    .panel-card {
+      background: var(--paper-strong);
+      border: 1px solid rgba(32, 47, 37, 0.08);
+      border-radius: 24px;
+      padding: 24px;
+    }
+
+    .panel h2,
+    .panel h3 {
+      margin: 0;
+      font-family: "Space Grotesk", sans-serif;
+      letter-spacing: -0.03em;
+    }
+
+    .subtle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    form {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    label {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--moss);
+    }
+
+    .field {
+      position: relative;
+    }
+
+    .field input {
+      width: 100%;
+      border: 1px solid rgba(32, 47, 37, 0.12);
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 18px;
+      padding: 17px 18px 17px 52px;
+      font: inherit;
+      font-size: 1rem;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .field input:focus {
+      border-color: rgba(216, 97, 56, 0.45);
+      box-shadow: 0 0 0 5px rgba(216, 97, 56, 0.14);
+      transform: translateY(-1px);
+    }
+
+    .field::before {
+      content: "01";
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(41, 73, 54, 0.46);
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+
+    button {
+      border: 0;
+      border-radius: 18px;
+      padding: 15px 18px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, #ec835b, var(--accent));
+      color: #fff8f3;
+      box-shadow: 0 18px 34px rgba(216, 97, 56, 0.28);
+    }
+
+    .secondary-btn {
+      background: rgba(41, 73, 54, 0.08);
+      color: var(--moss);
+      border: 1px solid rgba(41, 73, 54, 0.1);
+    }
+
+    .status {
+      min-height: 58px;
+      margin-top: 4px;
+      border-radius: 18px;
+      padding: 14px 16px;
+      background: rgba(255, 239, 228, 0.72);
+      border: 1px solid rgba(216, 97, 56, 0.14);
+      color: #7a341d;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+
+    .status.is-success {
+      background: rgba(221, 242, 228, 0.84);
+      border-color: rgba(41, 73, 54, 0.18);
+      color: #21422e;
+    }
+
+    .status.is-neutral {
+      background: rgba(243, 238, 227, 0.9);
+      border-color: rgba(32, 47, 37, 0.08);
+      color: var(--muted);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .calls-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .empty-state,
+    .call-card {
+      border-radius: 20px;
+      border: 1px solid rgba(32, 47, 37, 0.09);
+      background: rgba(255, 255, 255, 0.72);
+      padding: 16px;
+    }
+
+    .empty-state {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .call-card {
+      display: grid;
+      gap: 12px;
+      transform: translateY(10px);
+      opacity: 0;
+      animation: rise 0.45s ease forwards;
+    }
+
+    .call-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .call-label {
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+      font-weight: 800;
+    }
+
+    .call-value {
+      font-weight: 800;
+      word-break: break-word;
+    }
+
+    .call-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: #8e3c1f;
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    .badge::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 980px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 16px;
+      }
+
+      .hero,
+      .panel,
+      .panel-card {
+        padding: 20px;
+      }
+
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-footer,
+      .section-head,
+      .call-top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      h1 {
+        max-width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
-  <h1>Call AI Agent</h1>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <div class="eyebrow">Voice Workflow Studio</div>
+        <h1>Turn a phone call into a live AI conversation.</h1>
+        <p class="lead">
+          Launch an outbound call, watch activity build in real time, and review transcripts from one calm, focused workspace.
+        </p>
 
-  <form id="callForm">
-    <label for="phone">Your phone number (E.164):</label><br>
-    <input id="phone" type="tel" placeholder="+919876543210" required><br><br>
-    <button type="submit">Call Me</button>
-  </form>
+        <div class="hero-grid">
+          <div class="stat">
+            <strong>Fast Launch</strong>
+            <span>Start a test call with one number and keep the workflow simple.</span>
+          </div>
+          <div class="stat">
+            <strong>Live Trace</strong>
+            <span>Follow recent call records without leaving the page.</span>
+          </div>
+          <div class="stat">
+            <strong>Transcript View</strong>
+            <span>Inspect saved conversation fragments tied to each call SID.</span>
+          </div>
+        </div>
+      </div>
 
-  <div class="status" id="status"></div>
+      <div class="hero-footer">
+        <p class="hero-note">
+          <strong>Tip:</strong> the interface will load locally right away. Twilio calling starts working after your `.env` values and public callback URLs are configured.
+        </p>
+        <div class="orb" aria-hidden="true"></div>
+      </div>
+    </section>
 
-  <div class="transcripts">
-    <h3>Recent calls</h3>
-    <button id="refreshCalls">Refresh</button>
-    <div id="callsList"></div>
-  </div>
+    <aside class="panel">
+      <section class="panel-card">
+        <h2>Place a Test Call</h2>
+        <p class="subtle">Enter a phone number in E.164 format to trigger the outbound call flow.</p>
+
+        <form id="callForm">
+          <label for="phone">Phone Number</label>
+          <div class="field">
+            <input id="phone" type="tel" placeholder="+91 98765 43210" required>
+          </div>
+          <button class="primary-btn" type="submit">Call Me</button>
+        </form>
+
+        <div class="status is-neutral" id="status">Ready when you are. Start the Flask app, then place a test call from here.</div>
+      </section>
+
+      <section class="panel-card">
+        <div class="section-head">
+          <div>
+            <h3>Recent Calls</h3>
+            <p class="subtle">Refresh the list and inspect transcripts for recent sessions.</p>
+          </div>
+          <button class="secondary-btn" id="refreshCalls" type="button">Refresh</button>
+        </div>
+        <div class="calls-list" id="callsList"></div>
+      </section>
+    </aside>
+  </main>
 
 <script>
+const statusEl = document.getElementById("status");
+
+function setStatus(message, kind = "neutral") {
+  statusEl.className = "status";
+  if (kind === "success") statusEl.classList.add("is-success");
+  if (kind === "neutral") statusEl.classList.add("is-neutral");
+  statusEl.innerText = message;
+}
+
 async function startCall(phone) {
   const res = await fetch("/start-call", {
     method: "POST",
@@ -38,43 +558,73 @@ async function startCall(phone) {
     body: JSON.stringify({ phone })
   });
   const j = await res.json();
+  if (!res.ok) {
+    throw new Error(j.error || "Unable to start call");
+  }
   return j;
 }
 
 document.getElementById("callForm").onsubmit = async (e) => {
   e.preventDefault();
   const phone = document.getElementById("phone").value;
-  document.getElementById("status").innerText = "Starting call...";
+  setStatus("Starting call...", "neutral");
   try {
     const result = await startCall(phone);
-    document.getElementById("status").innerText = JSON.stringify(result);
+    setStatus(result.message || JSON.stringify(result), "success");
     await fetchCalls();
   } catch(err) {
-    document.getElementById("status").innerText = "Error: " + err;
+    setStatus("Error: " + err.message, "error");
   }
 };
 
 async function fetchCalls() {
-  const res = await fetch("/calls");
-  const list = await res.json();
   const container = document.getElementById("callsList");
-  container.innerHTML = "";
-  for (const c of list) {
-    const div = document.createElement("div");
-    div.innerHTML = `<strong>Call SID:</strong> ${c.call_sid} — <strong>to</strong> ${c.to_number} — <button data-sid="${c.call_sid}">View Transcript</button>`;
-    container.appendChild(div);
-  }
+  container.innerHTML = `<div class="empty-state">Loading recent calls...</div>`;
 
-  // attach view buttons
-  container.querySelectorAll("button[data-sid]").forEach(btn => {
-    btn.onclick = async () => {
-      const sid = btn.dataset.sid;
-      const res = await fetch("/transcripts/" + sid);
-      const items = await res.json();
-      const pretty = items.map(x => `${x.ts} [${x.role}] ${x.text}`).join("\n\n");
-      alert(pretty || "No transcript yet");
-    };
-  });
+  try {
+    const res = await fetch("/calls");
+    const list = await res.json();
+
+    container.innerHTML = "";
+
+    if (!list.length) {
+      container.innerHTML = `<div class="empty-state">No calls yet. Once you start a call, it will appear here with transcript access.</div>`;
+      return;
+    }
+
+    for (const c of list) {
+      const card = document.createElement("article");
+      card.className = "call-card";
+      card.innerHTML = `
+        <div class="call-top">
+          <div>
+            <div class="call-label">Call SID</div>
+            <div class="call-value">${c.call_sid || "Unavailable"}</div>
+          </div>
+          <div class="badge">Recent Session</div>
+        </div>
+        <div class="call-meta">
+          <span><strong>To:</strong> ${c.to_number || "Unknown"}</span>
+          <span><strong>From:</strong> ${c.from_number || "Unknown"}</span>
+          <span><strong>Started:</strong> ${c.start_time || "Unknown"}</span>
+        </div>
+        <button class="secondary-btn" type="button" data-sid="${c.call_sid}">View Transcript</button>
+      `;
+      container.appendChild(card);
+    }
+
+    container.querySelectorAll("button[data-sid]").forEach(btn => {
+      btn.onclick = async () => {
+        const sid = btn.dataset.sid;
+        const res = await fetch("/transcripts/" + sid);
+        const items = await res.json();
+        const pretty = items.map(x => `${x.ts} [${x.role}] ${x.text}`).join("\n\n");
+        alert(pretty || "No transcript yet");
+      };
+    });
+  } catch (err) {
+    container.innerHTML = `<div class="empty-state">Could not load calls right now. ${err.message}</div>`;
+  }
 }
 
 document.getElementById("refreshCalls").onclick = fetchCalls;

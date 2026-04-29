@@ -13,11 +13,12 @@ load_dotenv()
 # Config
 ELEVEN_API_KEY = os.getenv("ELEVEN_API_KEY")
 ELEVEN_WS_URL = os.getenv("ELEVEN_WS_URL", "wss://api.elevenlabs.io/realtime")  # placeholder — check current ElevenLabs realtime ws URL
-SAVE_TRANSCRIPT_ENDPOINT = os.getenv("SAVE_TRANSCRIPT_ENDPOINT", "http://127.0.0.1:5000/save-transcript")
+FLASK_PORT = int(os.getenv("FLASK_PORT", 5000))
+SAVE_TRANSCRIPT_ENDPOINT = os.getenv("SAVE_TRANSCRIPT_ENDPOINT", f"http://127.0.0.1:{FLASK_PORT}/save-transcript")
 
-# Twilio will connect to this server and send JSON frames. We'll listen on port 8765 by default.
+# Twilio will connect to this server and send JSON frames. Use a different port from Flask by default.
 WS_HOST = "0.0.0.0"
-WS_PORT = int(os.getenv("MEDIA_WS_PORT", 8765))
+WS_PORT = int(os.getenv("MEDIA_WS_PORT", 8766))
 
 # Simple in-memory mapping call_sid -> metadata
 active_calls = {}

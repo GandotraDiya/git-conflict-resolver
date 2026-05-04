@@ -8,7 +8,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = Flask(__name__, template_folder="templates")
+# Flask 2.3.x can fail on Python 3.14 while auto-detecting the instance path.
+# Providing an explicit absolute path avoids that compatibility issue.
+app = Flask(
+    __name__,
+    template_folder="templates",
+    instance_path=os.path.abspath("instance"),
+)
 
 # Config from env
 TWILIO_SID = os.getenv("TWILIO_SID")
@@ -155,4 +161,4 @@ def list_calls():
 
 if __name__ == "__main__":
     # Run Flask for the UI & API endpoints
-    app.run(host="0.0.0.0", port=int(os.getenv("FLASK_PORT", 5000)), debug=True)
+    app.run(host="0.0.0.0", port=int(os.getenv("FLASK_PORT", 5009)), debug=True)

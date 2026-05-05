@@ -25,6 +25,10 @@ twilio==8.5.0
 urllib3==2.6.3
 websockets==11.0.3
 werkzeug==3.1.8
+<<<<<<< HEAD
 yarl==1.23.0
   
   
+=======
+yarl==1.23.0
+>>>>>>> 21e0f0363dd638c309ae1292088d53542ece9cee

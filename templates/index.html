@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Call AI Agent</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --surface: #ffffff;
+      --surface-muted: #f8fafc;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #dbe1e8;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success-bg: #ecfdf3;
+      --success-text: #166534;
+      --error-bg: #fef2f2;
+      --error-text: #b91c1c;
+      --shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+
+    .page-header {
+      margin-bottom: 24px;
+    }
+
+    .page-header h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+      line-height: 1.2;
+    }
+
+    .page-header p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .layout {
+      display: grid;
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 1.25rem;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    input[type="tel"] {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font: inherit;
+      color: var(--text);
+      background: #fff;
+    }
+
+    input[type="tel"]:focus {
+      outline: 2px solid rgba(37, 99, 235, 0.18);
+      border-color: var(--primary);
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .primary-btn {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .primary-btn:hover {
+      background: var(--primary-hover);
+    }
+
+    .secondary-btn {
+      background: #fff;
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    .secondary-btn:hover {
+      background: var(--surface-muted);
+    }
+
+    .status {
+      margin-top: 16px;
+      min-height: 52px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .status.success {
+      background: var(--success-bg);
+      border-color: #bbf7d0;
+      color: var(--success-text);
+    }
+
+    .status.error {
+      background: var(--error-bg);
+      border-color: #fecaca;
+      color: var(--error-text);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .section-head h2,
+    .section-head p {
+      margin: 0;
+    }
+
+    .calls-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .call-card,
+    .empty {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface-muted);
+      padding: 16px;
+    }
+
+    .call-card h3 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+      word-break: break-word;
+    }
+
+    .call-meta {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .empty {
+      color: var(--muted);
+    }
+
+    .helper {
+      margin-top: 12px;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        padding: 20px 14px 36px;
+      }
+
+      .section-head {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="page-header">
+      <h1>Call AI Agent</h1>
+      <p>Start a test call, check recent sessions, and review transcripts from a simple dashboard.</p>
+    </header>
+
+    <section class="layout">
+      <section class="card">
+        <h2>Place a Test Call</h2>
+        <p>Enter a phone number in E.164 format, for example <strong>+919876543210</strong>.</p>
+
+        <form id="callForm" class="form-grid">
+          <div>
+            <label for="phone">Phone Number</label>
+            <input id="phone" type="tel" placeholder="+919876543210" required>
+          </div>
+
+          <div class="actions">
+            <button class="primary-btn" type="submit">Start Call</button>
+          </div>
+        </form>
+
+        <div class="status" id="status">Ready. Start the Flask server, then place a test call from here.</div>
+        <div class="helper">Calling depends on your Twilio and public callback environment variables being configured.</div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h2>Recent Calls</h2>
+            <p>Refresh the list to see your latest call attempts.</p>
+          </div>
+          <button class="secondary-btn" id="refreshCalls" type="button">Refresh</button>
+        </div>
+
+        <div class="calls-list" id="callsList">
+          <div class="empty">Loading calls...</div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const statusEl = document.getElementById("status");
+
+    function setStatus(message, tone = "") {
+      statusEl.className = "status";
+      if (tone) {
+        statusEl.classList.add(tone);
+      }
+      statusEl.innerText = message;
+    }
+
+    async function startCall(phone) {
+      const res = await fetch("/start-call", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ phone })
+      });
+      const j = await res.json();
+      if (!res.ok) {
+        throw new Error(j.error || "Unable to start call");
+      }
+      return j;
+    }
+
+    document.getElementById("callForm").onsubmit = async (e) => {
+      e.preventDefault();
+      const phone = document.getElementById("phone").value;
+      setStatus("Starting call...");
+      try {
+        const result = await startCall(phone);
+        setStatus(result.message || JSON.stringify(result), "success");
+        await fetchCalls();
+      } catch(err) {
+        setStatus("Error: " + err.message, "error");
+      }
+    };
+
+    async function fetchCalls() {
+      const container = document.getElementById("callsList");
+      container.innerHTML = '<div class="empty">Loading calls...</div>';
+
+      try {
+        const res = await fetch("/calls");
+        const list = await res.json();
+
+        if (!list.length) {
+          container.innerHTML = '<div class="empty">No calls yet. Start one and it will appear here.</div>';
+          return;
+        }
+
+        container.innerHTML = "";
+
+        for (const c of list) {
+          const div = document.createElement("article");
+          div.className = "call-card";
+          div.innerHTML = `
+            <h3>${c.call_sid || "Unavailable"}</h3>
+            <div class="call-meta">
+              <div><strong>To:</strong> ${c.to_number || "Unknown"}</div>
+              <div><strong>From:</strong> ${c.from_number || "Unknown"}</div>
+              <div><strong>Started:</strong> ${c.start_time || "Unknown"}</div>
+            </div>
+            <div class="actions">
+              <button class="secondary-btn" type="button" data-sid="${c.call_sid}">View Transcript</button>
+            </div>
+          `;
+          container.appendChild(div);
+        }
+
+        container.querySelectorAll("button[data-sid]").forEach(btn => {
+          btn.onclick = async () => {
+            const sid = btn.dataset.sid;
+            const res = await fetch("/transcripts/" + sid);
+            const items = await res.json();
+            const pretty = items.map(x => `${x.ts} [${x.role}] ${x.text}`).join("\n\n");
+            alert(pretty || "No transcript yet");
+          };
+        });
+      } catch (err) {
+        container.innerHTML = `<div class="empty">Could not load calls right now. ${err.message}</div>`;
+      }
+    }
+
+    document.getElementById("refreshCalls").onclick = fetchCalls;
+
+    fetchCalls();
+  </script>
+</body>
+</html>
